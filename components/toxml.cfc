@@ -123,17 +123,35 @@ If you find this app worthy, I have a Amazon wish list set up (www.amazon.com/o/
 		<cfset s.append("<?xml version=""1.0"" encoding=""UTF-8""?>")>
 	</cfif>
 
-	<cfset s.append("<#arguments.rootelement#>")>	
-	<cfset s.append("<#arguments.itemelement#>")>
+	<cfif len(arguments.rootelement) GT 0>
+		<cfset s.append("<#arguments.rootelement#>")>
+	</cfif>
+
+	<cfif len(arguments.itemelement) GT 0>
+		<cfset s.append("<#arguments.itemelement#>")>
+	</cfif>	
 
 	<cfloop index="key" list="#keys#">
-		<cfset s.append("<#key#>#safeText(arguments.data[key])#</#key#>")>
+		<cfif isStruct(arguments.data[key]) >
+			<cfset s.append("#structToXML(arguments.data[key], key, '' )#") ><!--- Reccursive call. Calling this functions only --->
+		<cfelseif isArray(arguments.data[key]) >
+			<cfloop from="1" to="#arrayLen(arguments.data[key])#" index="j" step="1">
+				<cfset s.append("#structToXML(arguments.data[key][j], key, '' )#") ><!--- Reccursive call. Calling this functions only --->
+			</cfloop>
+		<cfelse>
+			<cfset s.append("<#key#>#safeText(arguments.data[key])#</#key#>")>
+		</cfif>
 	</cfloop>
-	
-	<cfset s.append("</#arguments.itemelement#>")>
-	<cfset s.append("</#arguments.rootelement#>")>
-	
-	<cfreturn s.toString()>		
+
+	<cfif len(arguments.itemelement) GT 0>
+		<cfset s.append("</#arguments.itemelement#>")>
+	</cfif>
+
+	<cfif len(arguments.rootelement) GT 0>
+		<cfset s.append("</#arguments.rootelement#>")>
+	</cfif>	
+
+	<cfreturn s.toString()>
 </cffunction>
 
 <!--- Fix damn smart quotes. Thank you Microsoft! --->
